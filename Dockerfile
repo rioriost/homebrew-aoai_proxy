@@ -24,7 +24,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends azure-cli \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md /app/
+COPY pyproject.toml README.md LICENSE /app/
 COPY src /app/src
 
 RUN pip install --upgrade pip \
