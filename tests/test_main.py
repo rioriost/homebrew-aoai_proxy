@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
@@ -301,3 +303,41 @@ def test_forward_chat_completions_is_not_supported():
 
     assert exc.status_code == 404
     assert "/v1/responses" in exc.detail
+
+
+def test_cli_help_works_without_required_env_vars():
+    env = os.environ.copy()
+    env.pop("AOAI_PROXY_AZURE_OPENAI_ENDPOINT", None)
+    env.pop("AOAI_PROXY_AZURE_OPENAI_DEPLOYMENT", None)
+
+    result = subprocess.run(
+        [sys.executable, "-m", "aoai_proxy.main", "--help"],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Run the aoai_proxy server" in result.stdout
+    assert "--host" in result.stdout
+    assert "--port" in result.stdout
+    assert "azure_openai_endpoint" not in result.stderr.lower()
+
+
+def test_cli_version_works_without_required_env_vars():
+    env = os.environ.copy()
+    env.pop("AOAI_PROXY_AZURE_OPENAI_ENDPOINT", None)
+    env.pop("AOAI_PROXY_AZURE_OPENAI_DEPLOYMENT", None)
+
+    result = subprocess.run(
+        [sys.executable, "-m", "aoai_proxy.main", "--version"],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert result.stdout.strip() == "aoai_proxy 0.1.6"
+    assert result.stderr == ""

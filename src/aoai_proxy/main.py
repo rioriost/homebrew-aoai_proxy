@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import os
@@ -610,12 +611,36 @@ async def proxy_root(path: str, request: Request) -> Response:
 def main() -> None:
     import uvicorn
 
+    parser = argparse.ArgumentParser(
+        prog="aoai_proxy",
+        description="Run the aoai_proxy server for Azure OpenAI using Entra ID authentication.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="aoai_proxy 0.1.0",
+    )
+    parser.add_argument(
+        "--host",
+        default=None,
+        help="Override AOAI_PROXY_HOST for this process.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help="Override AOAI_PROXY_PORT for this process.",
+    )
+    args = parser.parse_args()
+
     settings = load_settings()
+    host = args.host or settings.host
+    port = args.port or settings.port
 
     uvicorn.run(
         "aoai_proxy.main:app",
-        host=settings.host,
-        port=settings.port,
+        host=host,
+        port=port,
         log_level=settings.log_level.lower(),
     )
 
